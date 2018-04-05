@@ -48,18 +48,19 @@ namespace Shadowsocks.Util.SystemProxy
         public static void SetIEProxy(bool enable, bool global, string proxyServer, string pacURL)
         {
             Read();
+
             if (!_userSettings.UserSettingsRecorded)
             {
                 // record user settings
                 ExecSysproxy("query");
                 ParseQueryStr(_queryStr);
             }
-            string arguments;
 
+            string arguments;
             if (enable)
             {
                 arguments = global
-                    ? $"global {proxyServer} <local>;localhost;127.*;10.*;172.16.*;172.17.*;172.18.*;172.19.*;172.20.*;172.21.*;172.22.*;172.23.*;172.24.*;172.25.*;172.26.*;172.27.*;172.28.*;172.29.*;172.30.*;172.31.*;172.32.*;192.168.*"
+                    ? $"global {proxyServer} <local>;localhost;127.*;10.*;172.16.*;172.17.*;172.18.*;172.19.*;172.20.*;172.21.*;172.22.*;172.23.*;172.24.*;172.25.*;172.26.*;172.27.*;172.28.*;172.29.*;172.30.*;172.31.*;192.168.*"
                     : $"pac {pacURL}";
             }
             else
@@ -138,8 +139,10 @@ namespace Shadowsocks.Util.SystemProxy
             try {
                 string configContent = File.ReadAllText(_userWininetConfigFile);
                 _userSettings = JsonConvert.DeserializeObject<SysproxyConfig>(configContent);
-            } catch (FileNotFoundException) {
-                _userSettings = new SysproxyConfig();
+            } catch(Exception) {
+               // Suppress all exceptions. finally block will initialize new user config settings.
+            } finally {
+                if (_userSettings == null) _userSettings = new SysproxyConfig();
             }
         }
 
